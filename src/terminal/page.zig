@@ -244,6 +244,8 @@ pub const Page = struct {
     /// this if you allocated the backing memory yourself (i.e. you used
     /// initBuf).
     pub inline fn deinit(self: *Page) void {
+        // ssq: see PageList.deinit; wasm recycles freed pages unzeroed.
+        if (comptime builtin.target.cpu.arch.isWasm()) @memset(self.memory, 0);
         posix.munmap(self.memory);
         self.* = undefined;
     }
