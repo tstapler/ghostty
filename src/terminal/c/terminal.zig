@@ -163,6 +163,7 @@ const ResponseHandler = struct {
             .active_status_display => self.terminal.status_display = value,
             .decaln => try self.terminal.decaln(),
             .full_reset => self.terminal.fullReset(),
+            .soft_reset => self.terminal.softReset(),
             .start_hyperlink => try self.terminal.screens.active.startHyperlink(value.uri, value.id),
             .end_hyperlink => self.terminal.screens.active.endHyperlink(),
             .prompt_start => {

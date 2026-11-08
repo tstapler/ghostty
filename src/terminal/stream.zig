@@ -77,6 +77,7 @@ pub const Action = union(Key) {
     next_line,
     reverse_index,
     full_reset,
+    soft_reset,
     set_mode: Mode,
     reset_mode: Mode,
     save_mode: Mode,
@@ -178,6 +179,7 @@ pub const Action = union(Key) {
             "next_line",
             "reverse_index",
             "full_reset",
+            "soft_reset",
             "set_mode",
             "reset_mode",
             "save_mode",
@@ -1579,9 +1581,22 @@ pub fn Stream(comptime Handler: type) type {
                     }
                 },
 
-                // DECRQM - Request Mode
+                // DECRQM - Request Mode, DECSTR - Soft Terminal Reset
                 'p' => switch (input.intermediates.len) {
-                    2 => decrqm: {
+                    1, 2 => decrqm: {
+                        // DECSTR - Soft Terminal Reset
+                        if (input.intermediates.len == 1 and
+                            input.intermediates[0] == '!')
+                        {
+                            if (input.params.len != 0) {
+                                log.warn("invalid DECSTR command: {f}", .{input});
+                                break :decrqm;
+                            }
+
+                            try self.handler.vt(.soft_reset, {});
+                            break :decrqm;
+                        }
+
                         const ansi_mode = ansi: {
                             switch (input.intermediates.len) {
                                 1 => if (input.intermediates[0] == '$') break :ansi true,

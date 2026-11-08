@@ -2819,6 +2819,48 @@ pub fn fullReset(self: *Terminal) void {
     self.flags.dirty.clear = true;
 }
 
+/// DECSTR - Soft Terminal Reset. Resets the modes and state a program may
+/// have left behind, without clearing the screen or moving the cursor.
+/// Backported from upstream ghostty's Terminal.softReset, and also resets
+/// what xterm's soft reset does (margins, cursor style, protection mode).
+pub fn softReset(self: *Terminal) void {
+    const reset_modes = [_]modespkg.Mode{
+        .cursor_visible,
+        .insert,
+        .origin,
+        .wraparound,
+        .reverse_wrap,
+        .reverse_wrap_extended,
+        .disable_keyboard,
+        .cursor_keys,
+        .keypad_keys,
+        .enable_left_and_right_margin,
+    };
+    const defaults: modespkg.ModeState = .{ .values = self.modes.default };
+    for (reset_modes) |mode| self.modes.set(mode, defaults.get(mode));
+
+    self.scrolling_region = .{
+        .top = 0,
+        .bottom = self.rows - 1,
+        .left = 0,
+        .right = self.cols - 1,
+    };
+
+    // The default style needs no allocation so this can't fail.
+    const screen: *Screen = self.screens.active;
+    screen.cursor.style = .{};
+    screen.manualStyleUpdate() catch unreachable;
+    screen.cursor.protected = false;
+    screen.protected_mode = .off;
+    screen.charset = .{};
+
+    // A saved cursor now restores to the home position with the defaults.
+    screen.saved_cursor = null;
+
+    self.status_display = .main;
+    self.flags.modify_other_keys_2 = false;
+}
+
 /// Returns true if the point is dirty, used for testing.
 fn isDirty(t: *const Terminal, pt: point.Point) bool {
     return t.screens.active.pages.getCell(pt).?.isDirty();
@@ -10904,6 +10946,37 @@ test "Terminal: fullReset with a non-empty pen" {
     }
 
     try testing.expectEqual(@as(style.Id, 0), t.screens.active.cursor.style_id);
+}
+
+test "Terminal: softReset resets modes, margins and pen but keeps cursor and text" {
+    var t = try init(testing.allocator, .{ .cols = 10, .rows = 6 });
+    defer t.deinit(testing.allocator);
+
+    try t.printString("hello");
+    t.modes.set(.origin, true);
+    t.modes.set(.insert, true);
+    t.modes.set(.wraparound, false);
+    t.modes.set(.cursor_visible, false);
+    t.scrolling_region = .{ .top = 1, .bottom = 3, .left = 0, .right = 9 };
+    try t.setAttribute(.{ .bold = {} });
+
+    const x = t.screens.active.cursor.x;
+    const y = t.screens.active.cursor.y;
+    t.softReset();
+
+    try testing.expect(!t.modes.get(.origin));
+    try testing.expect(!t.modes.get(.insert));
+    try testing.expect(t.modes.get(.wraparound));
+    try testing.expect(t.modes.get(.cursor_visible));
+    try testing.expectEqual(@as(usize, 0), t.scrolling_region.top);
+    try testing.expectEqual(@as(usize, 5), t.scrolling_region.bottom);
+    try testing.expectEqual(@as(u16, 0), t.screens.active.cursor.style_id);
+    try testing.expectEqual(x, t.screens.active.cursor.x);
+    try testing.expectEqual(y, t.screens.active.cursor.y);
+
+    const str = try t.plainString(testing.allocator);
+    defer testing.allocator.free(str);
+    try testing.expectEqualStrings("hello", str);
 }
 
 test "Terminal: fullReset hyperlink" {
