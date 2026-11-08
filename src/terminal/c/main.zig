@@ -4,6 +4,7 @@ pub const key_event = @import("key_event.zig");
 pub const key_encode = @import("key_encode.zig");
 pub const paste = @import("paste.zig");
 pub const sgr = @import("sgr.zig");
+pub const terminal = @import("terminal.zig");
 
 // The full C API, unexported.
 pub const osc_new = osc.new;
@@ -52,6 +53,42 @@ pub const key_encoder_encode = key_encode.encode;
 
 pub const paste_is_safe = paste.is_safe;
 
+// Terminal lifecycle
+pub const terminal_new = terminal.new;
+pub const terminal_new_with_config = terminal.newWithConfig;
+pub const terminal_free = terminal.free;
+pub const terminal_resize = terminal.resize;
+pub const terminal_write = terminal.write;
+
+// RenderState API - high-performance rendering
+pub const render_state_update = terminal.renderStateUpdate;
+pub const render_state_get_cols = terminal.renderStateGetCols;
+pub const render_state_get_rows = terminal.renderStateGetRows;
+pub const render_state_get_cursor_x = terminal.renderStateGetCursorX;
+pub const render_state_get_cursor_y = terminal.renderStateGetCursorY;
+pub const render_state_get_cursor_visible = terminal.renderStateGetCursorVisible;
+pub const render_state_get_bg_color = terminal.renderStateGetBgColor;
+pub const render_state_get_fg_color = terminal.renderStateGetFgColor;
+pub const render_state_is_row_dirty = terminal.renderStateIsRowDirty;
+pub const render_state_mark_clean = terminal.renderStateMarkClean;
+pub const render_state_get_viewport = terminal.renderStateGetViewport;
+pub const render_state_get_grapheme = terminal.renderStateGetGrapheme;
+
+// Terminal modes
+pub const terminal_is_alternate_screen = terminal.isAlternateScreen;
+pub const terminal_has_mouse_tracking = terminal.hasMouseTracking;
+pub const terminal_get_mode = terminal.getMode;
+
+// Scrollback API
+pub const terminal_get_scrollback_length = terminal.getScrollbackLength;
+pub const terminal_get_scrollback_line = terminal.getScrollbackLine;
+pub const terminal_get_scrollback_grapheme = terminal.getScrollbackGrapheme;
+pub const terminal_is_row_wrapped = terminal.isRowWrapped;
+
+// Response API (for DSR and other queries)
+pub const terminal_has_response = terminal.hasResponse;
+pub const terminal_read_response = terminal.readResponse;
+
 test {
     _ = color;
     _ = osc;
@@ -59,6 +96,7 @@ test {
     _ = key_encode;
     _ = paste;
     _ = sgr;
+    _ = terminal;
 
     // We want to make sure we run the tests for the C allocator interface.
     _ = @import("../../lib/allocator.zig");

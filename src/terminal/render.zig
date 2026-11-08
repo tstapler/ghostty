@@ -322,13 +322,14 @@ pub const RenderState = struct {
         // Colors.
         self.colors.cursor = t.colors.cursor.get();
         self.colors.palette = t.colors.palette.current;
-        bg_fg: {
+        {
             // Background/foreground can be unset initially which would
-            // depend on "default" background/foreground. The expected use
-            // case of Terminal is that the caller set their own configured
-            // defaults on load so this doesn't happen.
-            const bg = t.colors.background.get() orelse break :bg_fg;
-            const fg = t.colors.foreground.get() orelse break :bg_fg;
+            // depend on "default" background/foreground. Use sensible defaults
+            // (black background, light gray foreground) when not explicitly set.
+            const default_bg: color.RGB = .{ .r = 0, .g = 0, .b = 0 };
+            const default_fg: color.RGB = .{ .r = 204, .g = 204, .b = 204 };
+            const bg = t.colors.background.get() orelse default_bg;
+            const fg = t.colors.foreground.get() orelse default_fg;
             if (t.modes.get(.reverse_colors)) {
                 self.colors.background = fg;
                 self.colors.foreground = bg;

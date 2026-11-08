@@ -140,6 +140,41 @@ comptime {
         @export(&c.sgr_unknown_partial, .{ .name = "ghostty_sgr_unknown_partial" });
         @export(&c.sgr_attribute_tag, .{ .name = "ghostty_sgr_attribute_tag" });
         @export(&c.sgr_attribute_value, .{ .name = "ghostty_sgr_attribute_value" });
+        // Terminal lifecycle
+        @export(&c.terminal_new, .{ .name = "ghostty_terminal_new" });
+        @export(&c.terminal_new_with_config, .{ .name = "ghostty_terminal_new_with_config" });
+        @export(&c.terminal_free, .{ .name = "ghostty_terminal_free" });
+        @export(&c.terminal_resize, .{ .name = "ghostty_terminal_resize" });
+        @export(&c.terminal_write, .{ .name = "ghostty_terminal_write" });
+
+        // RenderState API - high-performance rendering
+        @export(&c.render_state_update, .{ .name = "ghostty_render_state_update" });
+        @export(&c.render_state_get_cols, .{ .name = "ghostty_render_state_get_cols" });
+        @export(&c.render_state_get_rows, .{ .name = "ghostty_render_state_get_rows" });
+        @export(&c.render_state_get_cursor_x, .{ .name = "ghostty_render_state_get_cursor_x" });
+        @export(&c.render_state_get_cursor_y, .{ .name = "ghostty_render_state_get_cursor_y" });
+        @export(&c.render_state_get_cursor_visible, .{ .name = "ghostty_render_state_get_cursor_visible" });
+        @export(&c.render_state_get_bg_color, .{ .name = "ghostty_render_state_get_bg_color" });
+        @export(&c.render_state_get_fg_color, .{ .name = "ghostty_render_state_get_fg_color" });
+        @export(&c.render_state_is_row_dirty, .{ .name = "ghostty_render_state_is_row_dirty" });
+        @export(&c.render_state_mark_clean, .{ .name = "ghostty_render_state_mark_clean" });
+        @export(&c.render_state_get_viewport, .{ .name = "ghostty_render_state_get_viewport" });
+        @export(&c.render_state_get_grapheme, .{ .name = "ghostty_render_state_get_grapheme" });
+
+        // Terminal modes
+        @export(&c.terminal_is_alternate_screen, .{ .name = "ghostty_terminal_is_alternate_screen" });
+        @export(&c.terminal_has_mouse_tracking, .{ .name = "ghostty_terminal_has_mouse_tracking" });
+        @export(&c.terminal_get_mode, .{ .name = "ghostty_terminal_get_mode" });
+
+        // Scrollback API
+        @export(&c.terminal_get_scrollback_length, .{ .name = "ghostty_terminal_get_scrollback_length" });
+        @export(&c.terminal_get_scrollback_line, .{ .name = "ghostty_terminal_get_scrollback_line" });
+        @export(&c.terminal_get_scrollback_grapheme, .{ .name = "ghostty_terminal_get_scrollback_grapheme" });
+        @export(&c.terminal_is_row_wrapped, .{ .name = "ghostty_terminal_is_row_wrapped" });
+
+        // Response API (for DSR and other queries)
+        @export(&c.terminal_has_response, .{ .name = "ghostty_terminal_has_response" });
+        @export(&c.terminal_read_response, .{ .name = "ghostty_terminal_read_response" });
 
         // On Wasm we need to export our allocator convenience functions.
         if (builtin.target.cpu.arch.isWasm()) {
